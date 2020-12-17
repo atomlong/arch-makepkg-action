@@ -10,6 +10,7 @@ RUN pacman -Syu --needed --noconfirm \
 RUN getent group arch &>/dev/null || groupadd "arch"
 RUN getent passwd arch &>/dev/null || useradd -m "arch" -s "/bin/bash" -g "arch"
 RUN echo "arch ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN CI_BUILD_DIR=${CI_BUILD_DIR}
 RUN chown -R arch:arch ${CI_BUILD_DIR}
 
 USER arch
