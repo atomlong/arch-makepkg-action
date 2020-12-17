@@ -1,0 +1,9 @@
+---
+name: "Archlinux MAKEPKG action"
+description: "Builds PKGBUILD definition"
+author: 'Atom Long'
+branding:
+  icon: package
+  color: blue
+runs:
+  using: docker
