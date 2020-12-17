@@ -1,9 +1,12 @@
-const core = require('@actions/core')
+const core = require('@actions/core');
+const exec = require('@actions/exec');
+const io = require('@actions/io');
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
 const YAML = require('yaml');
 const shlex = require('shlex');
-const { exec } = require('@actions/exec')
+
+
 
 function slug(str) {
   return str.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
@@ -151,7 +154,8 @@ async function main() {
   ].join('-'));
 
   console.log('Configuring Docker for multi-architecture support')
-  await exec(
+  await io.chmod(path.join(__dirname, 'run-on-arch.sh'), '0755');
+  await exec.exec(
     path.join(__dirname, 'run-on-arch.sh'),
     [ dockerFile, containerName, ...dockerRunArgs ],
     { env },
