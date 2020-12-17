@@ -5,5 +5,36 @@ author: 'Atom Long'
 branding:
   icon: package
   color: blue
+inputs:
+  githubToken:
+    description: 'Your GitHub token, used for caching Docker images in your project''s public package registry. Usually this would just be $\{{ github.token }}. This speeds up builds and is highly recommended.'
+    required: false
+    default: ''
+  rcloneConfig:
+    description: 'rclone configuration file content. Compiled packages will be uploaded to your cloud disk via rclone.'
+    required: true
+    default: ''
+  pgpKey:
+    description: 'A private PGP key used to sign the generated package. You can use command "gpg -ao seckey.asc --export-secret-keys <KeyID>" to export your private PGP key.'
+    required: true
+    default: ''
+  pgpKeyPassword:
+    description: 'The password of PGP private key.'
+    required: true
+    default: ''
+  deployPath:
+    description: 'The path to deploy archlinux package. such as onedrive:mirrors/archlinuxarm/x86_64/core'
+    required: true
+    default: ''
+  pacmanRepo:
+    description: 'The repository to which the current archlinux package belongs, such as core,community,extra.'
+    required: true
+    default: 'aur'
+  customRepos:
+    description: 'Custom package repositories to install unofficial packages via pacman, such as [aur]http://mirror.archlinuxarm.org/$arch/$repo.'
+    required: false
+    default: ''
+  
 runs:
-  using: docker
+  using: 'node12'
+  main: 'main.js'

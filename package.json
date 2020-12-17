@@ -1,0 +1,24 @@
+{
+  "name": "arch-makepkg-action",
+  "version": "1.0.0",
+  "description": "This create a package using the PKGBUILD on the root of the repository",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atomlong/arch-makepkg-action.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atomlong/arch-makepkg-action/issues"
+  },
+  "homepage": "https://github.com/atomlong/arch-makepkg-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.4",
+    "@actions/exec": "^1.0.4"
+  }
+}
