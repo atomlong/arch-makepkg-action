@@ -128,6 +128,9 @@ makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
 mkdir -pv ${ARTIFACTS_PATH}
 mv -vf *.pkg.tar.xz ${ARTIFACTS_PATH}
 }
+
+echo "Files list:"
+ls -alt
 return 0
 }
 
