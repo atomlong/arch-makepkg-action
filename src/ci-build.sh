@@ -128,6 +128,7 @@ makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
 mkdir -pv ${ARTIFACTS_PATH}
 mv -vf *.pkg.tar.xz ${ARTIFACTS_PATH}
 }
+return 0
 }
 
 # deploy artifacts
