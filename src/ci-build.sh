@@ -65,12 +65,12 @@ local repo name
 for repo in ${repos[@]}; do
 name=$(sed -n -r 's/\[(\w+)\].*/\1/p' <<< ${repo})
 [ -n "${name}" ] || continue
-cp -vf /etc/pacman.conf{,.orig}
-sed -r 's/]/&\nServer = /' <<< ${repo} >> /etc/pacman.conf
-sed -i -r 's/^(SigLevel\s*=\s*).*/\1Never/' /etc/pacman.conf
-pacman --sync --refresh --needed --noconfirm --disable-download-timeout ${name}-keyring && name="" || name="SigLevel = Never\n"
-mv -vf /etc/pacman.conf{.orig,}
-sed -r "s/]/&\n${name}Server = /" <<< ${repo} >> /etc/pacman.conf
+sudo cp -vf /etc/pacman.conf{,.orig}
+sudo sed -r 's/]/&\nServer = /' <<< ${repo} >> /etc/pacman.conf
+sudo sed -i -r 's/^(SigLevel\s*=\s*).*/\1Never/' /etc/pacman.conf
+sudo pacman --sync --refresh --needed --noconfirm --disable-download-timeout ${name}-keyring && name="" || name="SigLevel = Never\n"
+sudo mv -vf /etc/pacman.conf{.orig,}
+sudo sed -r "s/]/&\n${name}Server = /" <<< ${repo} >> /etc/pacman.conf
 done
 }
 
@@ -122,14 +122,7 @@ build_package()
 {
 [ -n "${ARTIFACTS_PATH}" ] || { echo "You must set ARTIFACTS_PATH firstly."; return 1; }
 
-_package_info depends{,_${PACMAN_ARCH}} makedepends{,_${PACMAN_ARCH}}
-
-[ -n "${depends}" ] && pacman -S --needed --noconfirm --disable-download-timeout ${depends[@]}
-[ -n "$(eval echo \${depends_${PACMAN_ARCH}})" ] && eval pacman -S --needed --noconfirm --disable-download-timeout \${depends_${PACMAN_ARCH}[@]}
-[ -n "${makedepends}" ] && pacman -S --needed --noconfirm --disable-download-timeout ${makedepends[@]}
-[ -n "$(eval echo \${makedepends_${PACMAN_ARCH}})" ] && eval pacman -S --needed --noconfirm --disable-download-timeout \${makedepends_${PACMAN_ARCH}[@]}
-
-runuser -u arch -- makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
+makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
 
 (ls *.pkg.tar.xz &>/dev/null) && {
 mkdir -pv ${ARTIFACTS_PATH}
@@ -170,7 +163,7 @@ message 'Install build environment.'
 [ -z "${PGP_KEY_PASSWD}" ] && { echo "Environment variable 'PGP_KEY_PASSWD' is required."; exit 1; }
 [ -z "${PGP_KEY}" ] && { echo "Environment variable 'PGP_KEY' is required."; exit 1; }
 [ -z "${CUSTOM_REPOS}" ] || add_custom_repos
-pacman --sync --refresh --sysupgrade --needed --noconfirm --disable-download-timeout base-devel rclone expect
+sudo pacman --sync --refresh --sysupgrade --needed --noconfirm --disable-download-timeout base-devel rclone expect
 mkdir -pv ${HOME}/.config/rclone
 printf "${RCLONE_CONF}" > ${HOME}/.config/rclone/rclone.conf
 import_pgp_seckey
