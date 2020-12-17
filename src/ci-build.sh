@@ -121,6 +121,7 @@ _EOF
 build_package()
 {
 [ -n "${ARTIFACTS_PATH}" ] || { echo "You must set ARTIFACTS_PATH firstly."; return 1; }
+local pkgname item
 
 unset PKGEXT
 _package_info PKGEXT
@@ -132,6 +133,12 @@ makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
 (ls *${PKGEXT} &>/dev/null) && {
 mkdir -pv ${ARTIFACTS_PATH}
 mv -vf *${PKGEXT} ${ARTIFACTS_PATH}
+true
+} || {
+_package_info pkgname
+for item in ${pkgname[@]}; do
+export FILED_PKGS=(${FILED_PKGS[@]} ${PACMAN_REPO}/${item})
+done
 }
 
 return 0
@@ -144,7 +151,7 @@ deploy_artifacts()
 local old_pkgs pkg file
 (ls ${ARTIFACTS_PATH}/*${PKGEXT} &>/dev/null) || { echo "Skiped, no file to deploy"; return 0; }
 pushd ${ARTIFACTS_PATH}
-echo ::set-output name=pkgfile0::$(ls *${PKGEXT})
+export PKG_FILES=(${PKG_FILES[@]} $(ls *${PKGEXT}))
 for file in ${PACMAN_REPO}.{db,files}{,.tar.xz}{,.old}; do
 rclone copy ${DEPLOY_PATH}/${file} ${PWD} 2>/dev/null || true
 done
@@ -156,6 +163,34 @@ rclone delete ${DEPLOY_PATH}/${file} 2>/dev/null || true
 done
 done
 rclone copy ${ARTIFACTS_PATH} ${DEPLOY_PATH} --copy-links
+}
+
+# create mail message
+create_mail_message()
+{
+local message item
+
+[ -n "${PKG_FILES}" ] && {
+message="<p>Successfully created the following package archive.</p>"
+for item in ${PKG_FILES[@]}; do
+message=${message}"<p><font color=\"green\">${item}</font></p>"
+done
+}
+
+[ -n "${FILED_PKGS}" ] && {
+message=${message}"<p>Failed to build following packages. </p>"
+for item in ${FILED_PKGS[@]}; do
+message=${message}"<p><font color=\"red\">${item}</font></p>"
+done
+}
+
+[ -n "${message}" ] && {
+message=${message}"<p>Architecture: ${PACMAN_ARCH}</p>"
+message=${message}"<p>Build Number: ${CI_BUILD_NUMBER}</p>"
+echo ::set-output name=message::${message}
+}
+
+return 0
 }
 
 # Run from here
@@ -174,13 +209,11 @@ sudo pacman --sync --refresh --sysupgrade --needed --noconfirm --disable-downloa
 mkdir -pv ${HOME}/.config/rclone
 printf "${RCLONE_CONF}" > ${HOME}/.config/rclone/rclone.conf
 import_pgp_seckey
-USER=$(whoami)
-GROUP=$(groups ${USER})
-sudo chown -R ${USER}:${GROUP} ${CI_BUILD_DIR}
 success 'The build environment is ready successfully.'
 # Build
 execute 'Building packages' build_package
 execute "Generating package signature" create_package_signature
 success 'All packages built successfully'
 execute "Deploying artifacts" deploy_artifacts
+create_mail_message
 success 'All artifacts have been deployed successfully'

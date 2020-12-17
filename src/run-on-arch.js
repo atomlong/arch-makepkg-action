@@ -57,7 +57,13 @@ async function main() {
 
   // Write container commands to a script file for running
   const commands = [
-    `#!${shell}`, 'set -eu;', core.getInput('run'), path.join(__dirname, 'ci-build.sh'),
+    `#!${shell}`,
+	'set -eu;',
+	core.getInput('run'),
+	'USER=$(whoami)',
+	'GROUP=$(groups ${USER})',
+	'sudo chown -R ${USER}:${GROUP} ${CI_BUILD_DIR}',
+	path.join(__dirname, 'ci-build.sh'),
   ].join('\n');
   fs.writeFileSync(
     path.join(__dirname, 'run-on-arch-commands.sh'),
