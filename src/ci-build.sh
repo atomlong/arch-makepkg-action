@@ -83,7 +83,7 @@ local pkg
 # signature for distrib packages.
 [ -d ${ARTIFACTS_PATH} ] && {
 pushd ${ARTIFACTS_PATH}
-for pkg in *.pkg.tar.xz; do
+for pkg in *${PKGEXT}; do
 expect << _EOF
 spawn gpg --pinentry-mode loopback -o "${pkg}.sig" -b "${pkg}"
 expect {
@@ -122,15 +122,18 @@ build_package()
 {
 [ -n "${ARTIFACTS_PATH}" ] || { echo "You must set ARTIFACTS_PATH firstly."; return 1; }
 
+unset PKGEXT
+_package_info PKGEXT
+[ -n "${PKGEXT}" ] || PKGEXT=$(grep -Po "^PKGEXT=('|\")?\K[^'\"]+" /etc/makepkg.conf)
+export PKGEXT=${PKGEXT}
+
 makepkg --noconfirm --skippgpcheck --nocheck --syncdeps --rmdeps --cleanbuild
 
-(ls *.pkg.tar.xz &>/dev/null) && {
+(ls *${PKGEXT} &>/dev/null) && {
 mkdir -pv ${ARTIFACTS_PATH}
-mv -vf *.pkg.tar.xz ${ARTIFACTS_PATH}
+mv -vf *${PKGEXT} ${ARTIFACTS_PATH}
 }
 
-echo "Files list:"
-ls -alt
 return 0
 }
 
@@ -139,16 +142,16 @@ deploy_artifacts()
 {
 [ -n "${DEPLOY_PATH}" ] || { echo "You must set DEPLOY_PATH firstly."; return 1; } 
 local old_pkgs pkg file
-(ls ${ARTIFACTS_PATH}/*.pkg.tar.xz &>/dev/null) || { echo "Skiped, no file to deploy"; return 0; }
+(ls ${ARTIFACTS_PATH}/*${PKGEXT} &>/dev/null) || { echo "Skiped, no file to deploy"; return 0; }
 pushd ${ARTIFACTS_PATH}
-echo ::set-output name=pkgfile0::$(ls *.pkg.tar.xz)
+echo ::set-output name=pkgfile0::$(ls *${PKGEXT})
 for file in ${PACMAN_REPO}.{db,files}{,.tar.xz}{,.old}; do
 rclone copy ${DEPLOY_PATH}/${file} ${PWD} 2>/dev/null || true
 done
-old_pkgs=($(repo-add "${PACMAN_REPO}.db.tar.xz" *.pkg.tar.xz | tee /dev/stderr | grep -Po "\bRemoving existing entry '\K[^']+(?=')"))
+old_pkgs=($(repo-add "${PACMAN_REPO}.db.tar.xz" *${PKGEXT} | tee /dev/stderr | grep -Po "\bRemoving existing entry '\K[^']+(?=')"))
 popd
 for pkg in ${old_pkgs[@]}; do
-for file in ${pkg}-{${PACMAN_ARCH},any}.pkg.tar.xz{,.sig}; do
+for file in ${pkg}-{${PACMAN_ARCH},any}.pkg.tar.{xz,zst}{,.sig}; do
 rclone delete ${DEPLOY_PATH}/${file} 2>/dev/null || true
 done
 done
