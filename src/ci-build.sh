@@ -167,6 +167,9 @@ sudo pacman --sync --refresh --sysupgrade --needed --noconfirm --disable-downloa
 mkdir -pv ${HOME}/.config/rclone
 printf "${RCLONE_CONF}" > ${HOME}/.config/rclone/rclone.conf
 import_pgp_seckey
+USER=$(whoami)
+GROUP=$(groups ${USER})
+sudo chown -R ${USER}:${GROUP} ${CI_BUILD_DIR}
 success 'The build environment is ready successfully.'
 # Build
 execute 'Building packages' build_package
