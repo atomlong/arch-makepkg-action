@@ -10,7 +10,6 @@ RUN pacman -Syu --needed --noconfirm \
 RUN getent group arch &>/dev/null || groupadd "arch"
 RUN getent passwd arch &>/dev/null || useradd -m "arch" -s "/bin/bash" -g "arch"
 RUN echo "arch ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN chown -R arch:arch ${GITHUB_WORKSPACE}
+RUN chown -R arch:arch ${CI_BUILD_DIR}
 
 USER arch
-
