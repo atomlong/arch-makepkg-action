@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
-const io = require('@actions/io');
+const ioUtil = require('@actions/io/lib/io-util.js');
 const fs = require('fs');
 const path = require('path');
 const YAML = require('yaml');
@@ -154,7 +154,7 @@ async function main() {
   ].join('-'));
 
   console.log('Configuring Docker for multi-architecture support')
-  await io.chmod(path.join(__dirname, 'run-on-arch.sh'), '0755');
+  await ioUtil.chmod(path.join(__dirname, 'run-on-arch.sh'), '0755');
   await exec.exec(
     path.join(__dirname, 'run-on-arch.sh'),
     [ dockerFile, containerName, ...dockerRunArgs ],
