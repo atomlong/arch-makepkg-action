@@ -6,8 +6,39 @@ branding:
   icon: package
   color: blue
 inputs:
+  arch:
+    description: 'CPU architecture: only x86_64 support.'
+    required: false
+    default: 'x86_64'
+  distro:
+    description: 'Linux distribution name: archlinux.'
+    required: false
+    default: 'archlinux'
   githubToken:
     description: 'Your GitHub token, used for caching Docker images in your project''s public package registry. Usually this would just be $\{{ github.token }}. This speeds up builds and is highly recommended.'
+    required: false
+    default: ''
+  env:
+    description: 'Environment variables to propagate to the container. YAML, but must begin with a | character. These variables will be available in both run and setup.'
+    required: false
+    default: ''
+  run:
+    description: 'Shell commands to execute in the container.'
+    required: false
+    default: ''
+  shell:
+    description: 'The shell to run commands with in the container. Default: /bin/sh on alpine (because Alpine uses BusyBox), /bin/bash for other distros.'
+    required: false
+    default: ''
+  dockerRunArgs:
+    description: 'Additional arguments to pass to docker run, such as volume mappings. See README for example usage.'
+    required: false
+  setup:
+    description: 'Shell commands to execute on the host before running the container, such as creating directories for volume mappings. See README for example usage.'
+    required: false
+    default: ''
+  install:
+    description: 'Shell commands to execute in the container as part of docker build, such as installing dependencies. This speeds up subsequent builds if githubToken is also used, but note that the image layer will be publicly available in your projects GitHub Package Registry, so make sure the resulting image does not have any secrets cached in logs or state.'
     required: false
     default: ''
   rcloneConfig:
@@ -37,4 +68,4 @@ inputs:
   
 runs:
   using: 'node12'
-  main: 'main.js'
+  main: 'src/run-on-arch.js'
